@@ -31,7 +31,6 @@ class Attention(torch.nn.Module):
         Returns:
             torch.Tensor: Output tensor of shape (batch_size, n_q, d_model).
         """
-        print("hello")
         d_model = Q.shape[-1]  # Embedding dimension
         n_q = Q.shape[1]  # Length of input
         n_k = K.shape[1]  # Length of output
@@ -41,17 +40,16 @@ class Attention(torch.nn.Module):
 
         # Calculate modelling logits
         attn_logits = torch.bmm(Q, K.transpose(1, 2)) * scaling_factor
-        print(attn_logits.shape)
 
         # Apply future mask
         if self.mask_future:
             future_mask = torch.tril(torch.ones(n_q, n_k))
-            attn_logits.masked_fill_(future_mask == 0, -torch.inf)
+            attn_logits.masked_fill_(future_mask == 0, -10e-12)
 
         # Apply padding mask
         if padding_mask is not None:
             padding_mask = padding_mask.unsqueeze(dim=1)
-            attn_logits.masked_fill_(padding_mask == 0, -torch.inf)
+            attn_logits.masked_fill_(padding_mask == 0, -10e-12)
 
         # Apply softmax to masked logits
         softmax_attn = torch.softmax(attn_logits, -1)

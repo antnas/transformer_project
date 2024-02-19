@@ -16,5 +16,6 @@ def train_tokenizer(dataset, language, vocab_size, outdir):
     trained_tokenizer.save_pretrained(outdir)
 
 if __name__ == '__main__':
-    cleaned_data = load_from_disk("../data/wmt17_de-en_cleaned.hf")
-    train_tokenizer(cleaned_data, 'de', 50000, "../models/tokenizer_de")
+    cleaned_data = load_from_disk("data/wmt17_de-en_cleaned.hf")
+    train_tokenizer(cleaned_data, 'de', 50000, "./models/tokenizer_de")
+    train_tokenizer(cleaned_data, 'en', 50000, "./models/tokenizer_en")

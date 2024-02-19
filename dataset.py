@@ -1,29 +1,48 @@
 import datasets
 import re
 import tqdm
+import torch
 from datasets import load_dataset, load_from_disk
 from torch.utils.data import Dataset, DataLoader
+from transformers import AutoTokenizer
+
 
 class TranslationDataset(Dataset):
-    def __init__(self, dataset, ):
+    def __init__(self, dataset, de_tokenizer = None, en_tokenizer = None, max_length=64):
         """
         args:
             dataset (datasets.Dataset)
         """
         self.dataset = dataset
+        self.de_tokenizer = de_tokenizer
+        self.en_tokenizer = en_tokenizer
+        self.max_length = max_length
 
     def __len__(self):
         return len(self.dataset)
 
     def __getitem__(self, idx):
-        return self.dataset[idx]
+        element = self.dataset[idx]
+        return {'de': list(self.de_tokenizer(element['de'], max_length=self.max_length, padding='max_length').values()), 
+                'en': list(self.en_tokenizer(element['en'], max_length=self.max_length, padding='max_length').values())}
 
-def load_dataset():
+def translation_collate(list_of_dicts):
+    batch = {'de': [], 'en': []}
+    
+    for key in ['de', 'en']:
+        for dictionary in list_of_dicts:
+            batch[key].append(dictionary[key])
+        
+        batch[key] = torch.tensor(batch[key]).transpose(0,1)
+
+    return batch
+
+def load_clean_dataset(de_tokenizer, en_tokenizer, max_length):
     ds = load_from_disk('data/wmt17_de-en_cleaned.hf')
 
-    train_ds = TranslationDataset(ds['train'])
-    val_ds = TranslationDataset(ds['validation'])
-    test_ds = TranslationDataset(ds['test'])
+    train_ds = TranslationDataset(ds['train'], de_tokenizer, en_tokenizer, max_length)
+    val_ds = TranslationDataset(ds['validation'], de_tokenizer, en_tokenizer, max_length)
+    test_ds = TranslationDataset(ds['test'], de_tokenizer, en_tokenizer, max_length)
 
     return train_ds, val_ds, test_ds
 
@@ -46,10 +65,13 @@ def clean_dataset(dataset, min_length=5, max_length=64, max_ratio=1.5):
         return text
 
     cleaned_dataset = datasets.DatasetDict()
+
     for split in dataset.keys():
         data_split = {
+            'de': [],
             'en': [],
-            'de': []
+        #    'src_mask': [],
+        #    'tgt_mask': []
         }
 
         for data in tqdm.tqdm(dataset[split], desc = split):
@@ -68,11 +90,19 @@ def clean_dataset(dataset, min_length=5, max_length=64, max_ratio=1.5):
                     data_split['en'].append(src_text)
                     data_split['de'].append(tgt_text)
 
+                    #features = tokenizer(src_text, '', max_length=max_length, padding='max_length')
+                    #labels_features = tokenizer(tgt_text, '', max_length=max_length, padding='max_length')
+
+                    #data_split['src_mask'] = features['input_ids']
+                    #data_split['tgt_mask'] = labels_features['input_ids']
+
         cleaned_dataset[split] = datasets.Dataset.from_dict(data_split)
     return cleaned_dataset
+
 
 if __name__ == '__main__':
     ds = load_dataset("wmt17", "de-en")
     cleaned_dataset = clean_dataset(ds)
     cleaned_dataset.save_to_disk("data/wmt17_de-en_cleaned.hf")
+
 
