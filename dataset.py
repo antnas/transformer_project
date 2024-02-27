@@ -69,9 +69,7 @@ def clean_dataset(dataset, min_length=5, max_length=64, max_ratio=1.5):
     for split in dataset.keys():
         data_split = {
             'de': [],
-            'en': [],
-        #    'src_mask': [],
-        #    'tgt_mask': []
+            'en': []
         }
 
         for data in tqdm.tqdm(dataset[split], desc = split):
@@ -89,13 +87,6 @@ def clean_dataset(dataset, min_length=5, max_length=64, max_ratio=1.5):
                 if 1/max_ratio <= ratio <= max_ratio:
                     data_split['en'].append(src_text)
                     data_split['de'].append(tgt_text)
-
-                    #features = tokenizer(src_text, '', max_length=max_length, padding='max_length')
-                    #labels_features = tokenizer(tgt_text, '', max_length=max_length, padding='max_length')
-
-                    #data_split['src_mask'] = features['input_ids']
-                    #data_split['tgt_mask'] = labels_features['input_ids']
-
         cleaned_dataset[split] = datasets.Dataset.from_dict(data_split)
     return cleaned_dataset
 

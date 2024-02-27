@@ -1,7 +1,7 @@
 import torch.nn as nn
 
 class WordEmbedding(nn.Module):
-    def __init__(self, embedding_dim, vocab_size=50000):
+    def __init__(self, embedding_dim, vocab_size=30000):
         super(WordEmbedding, self).__init__()
         self.word_embedding = nn.Embedding(vocab_size, embedding_dim)
 

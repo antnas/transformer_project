@@ -44,12 +44,14 @@ class Attention(torch.nn.Module):
         # Apply future mask
         if self.mask_future:
             future_mask = torch.tril(torch.ones(n_q, n_k))
-            attn_logits.masked_fill_(future_mask == 0, -10e-12)
+            #attn_logits.masked_fill_(future_mask == 0, -10e-12)
+            attn_logits.masked_fill_(future_mask == 0, -np.inf)
 
         # Apply padding mask
         if padding_mask is not None:
             padding_mask = padding_mask.unsqueeze(dim=1)
-            attn_logits.masked_fill_(padding_mask == 0, -10e-12)
+            #attn_logits.masked_fill_(padding_mask == 0, -10e-12)
+            attn_logits.masked_fill_(padding_mask == 0, -np.inf)
 
         # Apply softmax to masked logits
         softmax_attn = torch.softmax(attn_logits, -1)

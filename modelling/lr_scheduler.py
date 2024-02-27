@@ -1,5 +1,4 @@
 import torch
-from torch.optim import AdamW, Optimizer
 from torch.optim.lr_scheduler import LRScheduler
 
 class TransformerLR(LRScheduler):
@@ -38,11 +37,3 @@ class TransformerLR(LRScheduler):
     def get_lr(self):
         lr = self.d_model**(-0.5) * min(self._step_count**(-0.5), self._step_count * self.warmup_steps**(-1.5))
         return [base_lr * lr for base_lr in self.base_lrs]
-    
-def get_adamw_optimizer(model, lr, weight_decay, exclude_params=['bias', 'LayerNorm']):
-    parameters = [
-        {'params': [p for n, p in model.named_parameters() if n not in exclude_params], 'weight_decay': weight_decay},
-        {'params': [p for n, p in model.named_parameters() if n in exclude_params], 'weight_decay': 0.0}  # No weight decay for certain parameters
-    ]
-    optimizer = AdamW(parameters, lr=lr)
-    return optimizer

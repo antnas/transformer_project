@@ -41,7 +41,7 @@ class BaseTransformerLayer(nn.Module):
         # First sublayer is the multi-head attention
         x_pre = x
         x = self.self_attention(x, x, x, attention_mask)
-        #x *= attention_mask.unsqueeze(-1).float()
+        x *= attention_mask.unsqueeze(-1).float()
         if self.dropout:
             x = self.dropout(x)
         x = self.layer_norm_1(x + x_pre) 
@@ -50,11 +50,11 @@ class BaseTransformerLayer(nn.Module):
         # Second sublayer is the feed forward network
         x_pre = x
         x = self.feature_transformation(x)
-        #x *= attention_mask.unsqueeze(-1).float()
+        x *= attention_mask.unsqueeze(-1).float()
         if self.dropout:
             x = self.dropout(x)
         x = self.layer_norm_2(x + x_pre)
-        #x *= attention_mask.unsqueeze(-1).float()
+        x *= attention_mask.unsqueeze(-1).float()
 
         return x
 
@@ -99,7 +99,7 @@ class TransformerDecoderLayer(nn.Module):
         # First sublayer is the masked multi-head attention
         x_pre = x
         x = self.self_attention(x, x, x, attention_mask)
-        #x *= attention_mask.unsqueeze(-1).float()
+        x *= attention_mask.unsqueeze(-1).float()
         if self.dropout:
             x = self.dropout(x)
         x = self.layer_norm_1(x + x_pre) 
@@ -107,7 +107,7 @@ class TransformerDecoderLayer(nn.Module):
         # Second sublayer is the encoder multi-head attention
         x_pre = x
         x = self.encoder_attention(x, encoder, encoder, encoder_attention_maks)
-        #x *= attention_mask.unsqueeze(-1).float()
+        x *= attention_mask.unsqueeze(-1).float()
         if self.dropout:
             x = self.dropout(x)
         x = self.layer_norm_2(x + x_pre)
@@ -115,10 +115,10 @@ class TransformerDecoderLayer(nn.Module):
         # Third sublayer is the feed forward network
         x_pre = x
         x = self.feature_transformation(x)
-        #x *= attention_mask.unsqueeze(-1).float()
+        x *= attention_mask.unsqueeze(-1).float()
         if self.dropout:
             x = self.dropout(x)
         x = self.layer_norm_3(x + x_pre)
-        #x *= attention_mask.unsqueeze(-1).float()
+        x *= attention_mask.unsqueeze(-1).float()
 
         return x
